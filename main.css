@@ -128,6 +128,13 @@ input[type=text], input[type=username], input[type=password] {
     margin-bottom: 10px;
 }
 
+#upload-progress-bar {
+    background-color: var(--focus);
+    height: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
 #left-content {
     display: flex;
     justify-content: center;
@@ -293,4 +300,41 @@ input[type=text], input[type=username], input[type=password] {
     white-space: nowrap;
     text-overflow: ellipsis;
     height: 24px; /* table is 24px tall :3 */
+}
+
+@media only screen and (max-device-width: 1000px)
+{
+    #below-header {
+        height: auto;
+    }
+
+    #flanstore-info {
+        margin-bottom: 40px;
+    }
+
+    #left-content {
+        width: 100%;
+        height: auto;
+    }
+
+    #logout-area {
+        position: relative;
+        top: 0;
+        right: 0;
+        float: right;
+    }
+
+    #file-display {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    #settings {
+        display: none;
+    }
+
+    #header-text {
+        display: none;
+    }
 }

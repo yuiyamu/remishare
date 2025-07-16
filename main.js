@@ -32,7 +32,6 @@ function sortTable(table, type) {
 let pfpFile;
 let appliedForAccount = false;
 async function applyForAccount() {
-  console.log('meow');
   if (!appliedForAccount) {
     let dataToSend;
     let subdomainInput = document.getElementById('application-subdomain').value;
@@ -306,32 +305,41 @@ if (!localStorage.getItem("key")) { //if we don't have a key yet, then we wanna 
       let imageForm = new FormData();
       imageForm.append('file', file);
 
-      await fetch(`${endpoint}/upload`, {
-        method: 'POST',
-        headers: {
-          'Authorization': localStorage.getItem("key"),
-          'X-User': localStorage.getItem("user")
-        },
-        body: imageForm,
-      });
-      location.reload(); //forcefully reloads eheehe
+      uploadFile(imageForm);
   });
 
   //handles uploads with the file picker (formSubmit), reloads no matter what happens
   document.getElementById('file-submit-form').addEventListener('submit', async (e) => {
     let image = new FormData(e.target);
-    await fetch(`${endpoint}/upload`, {
-      method: 'POST',
-      headers: {
-        'Authorization': localStorage.getItem("key"),
-        'X-User': localStorage.getItem("user")
-      },
-      body: image,
-    });
-    /* page will reload after this, due to how forms and html and browser shenanagins interact.
-    * i tried everything to try to prevent this, but it seems like it's MURI */
-    location.reload(); //actually nvm. it doesn't reload in prod, but i actually do like this functionality :3
+    uploadFile(image);
   });
+
+  function uploadFile(file) {
+    document.getElementById('file-submit-form').insertAdjacentHTML('afterend', `<div id="upload-progress-bar"></div><p id="progress-percent></p>`);
+
+    let xhr = new XMLHttpRequest();
+    let progressBar = document.getElementById('upload-progress-bar');
+    let percentage = document.getElementById('progress-percent');
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        let percent = (event.loaded / event.total)*100;
+        progressBar.style.width = `${percent}%`;
+        percentage.textContent = `${percent}%`;
+      }
+    };
+
+    xhr.open('POST', `${endpoint}/upload`);
+    xhr.setRequestHeader('Authorization', localStorage.getItem("key"));
+    xhr.setRequestHeader('X-User', localStorage.getItem("user"));
+    xhr.send(file);
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        location.reload(); //reloads after the file is sent properly :3
+      }
+    };
+  }
 
   (async () => {
     var userPfp = document.getElementById('user-pfp');
