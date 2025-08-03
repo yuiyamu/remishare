@@ -1,6 +1,27 @@
 :root {
     --focus: rgb(193, 115, 66);
     --unfocus: rgb(193, 174, 66);
+    --text: rgb(180 181 191);
+    --link: rgb(100, 101, 112);
+    --background: rgb(40 40 40);
+}
+
+:root {
+    --text: rgb(180 181 191);
+    --link: rgb(100, 101, 112);
+    --background: rgb(40 40 40);
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text);
+    font-family: "Zen Kaku Gothic New", sans-serif;
+    font-size: 16px;
+    margin: 0;
+}
+
+a {
+    color: var(--link);
 }
 
 body {
