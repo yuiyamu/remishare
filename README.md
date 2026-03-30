@@ -1,13 +1,8 @@
-# flanstore
+# remishare
 
-simple file sharing platform, hosted on flandre (an hp t530 thin client)
+simple personal file sharing platform, hosted on my personal server (remilia)
 
 ![](https://yui.yuru.ca/ajpyn8ylme.png)
-
-similar to s-ul.eu, each user has their own subdomain and can drag/drop or upload any sort of file to get a shareable link to said file!! wowwww :O
-
-(note: because of being hosted on yuru.ca, disallowed usernames are syd, lilac, api, and of course flanstore as they're used for other website things :p)
-
 
 
 ## dev notes

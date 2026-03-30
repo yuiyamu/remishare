@@ -1,0 +1,16 @@
+{
+  "name": "remishare-server",
+  "version": "0.0.1",
+  "description": "mreow",
+  "main": "backend.js",
+  "author": "yuiyamu",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "crypto": "^1.0.1",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "path": "^0.12.7",
+    "ws": "^8.20.0"
+  }
+}
