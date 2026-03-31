@@ -17,7 +17,7 @@ interface loginAttempt {
   key?: string;
 }
 
-const endpoint = "http://remiapi.yuru.ca";
+const endpoint = "https://remiapi.yuru.ca";
 var currentDomain = $state("");
 var currentUser = $state("");
 var fileMap: fileEntry[]; //constant upon page load~
