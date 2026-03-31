@@ -14,11 +14,6 @@ declare global {
         rawFileSize: number;
         timestampAdded: number;
     }
-
-    interface loginAttempt {
-        loginStatus: boolean;
-        key?: string;
-    }
 }
 
-export { user, fileEntry, loginAttempt }
+export { user, fileEntry }

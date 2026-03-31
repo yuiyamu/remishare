@@ -1,9 +1,9 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as crypto from "node:crypto";
-import * as express from "express";
-import * as multer from "multer";
-import * as cors from "cors";
+import express from "express";
+import multer from "multer";
+import cors from "cors";
 
 const app = express();
 const port = 1402; /* <3 */

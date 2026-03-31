@@ -1,5 +1,5 @@
 import * as fs from "node:fs";
-import * as express from "express";
+import express from "express";
 
 const app = express();
 const port = 1414; //not as bouba lovey >_< but we need a different port,,
