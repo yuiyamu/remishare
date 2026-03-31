@@ -17,7 +17,7 @@ services:
     environment:
       - PORT=1402
     volumes:
-      - /yuru # probably best to use this inside of a vm, or change this mount~
+      - /yuru/remishare-files # probably best to use this inside of a vm, or change this mount~
     networks:
       - filemanager-net
 
