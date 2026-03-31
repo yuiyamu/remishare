@@ -1,9 +1,9 @@
 {
 	"name": "remistore",
 	"private": true,
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"type": "module",
-	"license":"GPL-3.0-only",
+	"license": "AGPL-3.0-only",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -16,6 +16,7 @@
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@sveltejs/adapter-node": "^5.5.4",
 		"svelte": "^5.54.0",
 		"svelte-check": "^4.4.2",
 		"typescript": "^5.9.3",

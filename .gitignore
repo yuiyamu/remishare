@@ -1,5 +1,7 @@
 backend/userinfo.json
 backend/files
 
+build
+
 .svelte-kit
 node_modules

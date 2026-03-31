@@ -1,12 +1,18 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as crypto from "node:crypto";
+import http from 'node:http';
 import express from "express";
 import multer from "multer";
 import cors from "cors";
 
 const app = express();
 const port = 1402; /* <3 */
+
+const mainServer = http.createServer(app);
+const userServer = http.createServer(app);
+mainServer.listen(1402, () => console.log(`flanstore server - port 1402~`));
+userServer.listen(1414, () => console.log(`flanstore file server - port 1414~`));
 
 app.use(cors()); //make cors shut the FUCK up :3
 app.use(express.json()); //parsing messages in json because json is cool and sick
@@ -22,10 +28,6 @@ userInfo.forEach(user => {
     }
 });
 app.use(express.static(`./api`)); //serves everything in the api folder, which for now is just user pfps :3
-
-app.listen(port, () => {
-    console.log(`flanstore server - port ${port}~`);
-});
 
 var lastFileName = '';
 var originalFileName = '';
@@ -176,4 +178,20 @@ app.post('/login', (req, res) => {
     } else {
         res.send({loginStatus: false});
     }
+});
+
+app.get('/:fileid', (req, res) => {
+  if (req.socket.localPort === 1414 ) {
+    let fileId = req.params.fileid;
+    let subdomain = req.hostname.split('.')[0];
+    let fileMap = JSON.parse(fs.readFileSync(`./files/${subdomain}/filemap.json`, {encoding: 'utf8'})) as fileEntry[];
+    let originalFileIndex = fileMap.findIndex(file => file.serverPath === fileId);
+
+    if (originalFileIndex === -1) {
+        res.status(500).send(`couldn't find file on server >_<;; `);
+    }
+
+    res.setHeader('Content-Disposition', `inline; filename="${fileMap[originalFileIndex].filename}"`);
+    res.sendFile(`./files/${subdomain}/${fileId}`, { root: '.' });
+  }
 });

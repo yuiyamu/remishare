@@ -17,12 +17,12 @@ interface loginAttempt {
   key?: string;
 }
 
-const endpoint = "http://localhost:1402";
+const endpoint = "http://remiapi.yuru.ca";
 var currentDomain = $state("");
 var currentUser = $state("");
 var fileMap: fileEntry[]; //constant upon page load~
 var tableFileMap = $state() as fileEntry[];
-var curCopiedLink: string;
+var curCopiedLink = $state("");
 
 var showFileNameArrow = $state(false);
 var showDateAddedArrow = $state(false);
@@ -174,6 +174,13 @@ function uploadFile(file: FormData) {
   }
   }
 }
+
+var showClipboardPopup = $state(false);
+function copyToClipboard(filename: string) {
+  showClipboardPopup = true;
+  curCopiedLink = `https://${currentDomain}/${filename}`;
+  navigator.clipboard.writeText(curCopiedLink);
+}
 </script>
 
 <svelte:window ondragover={(e) => {e.preventDefault(); isShowingUpload = true}} ondrop={handleDroppedFile}/>
@@ -246,30 +253,30 @@ function uploadFile(file: FormData) {
           </colgroup>
             <tbody id="table-fill">
             <tr>
-            <th id="file-name" onmouseover={() => (showFileNameArrow = true)} onclick={() => sortTable("text", false)}>file name 
+            <th onmouseover={() => (showFileNameArrow = true)} onclick={() => sortTable("text", false)}>file name 
               {#if showFileNameArrow}<span class="table-sort-arrow">▲</span>{/if}
             </th>
-            <th id="date-added" onmouseover={() => (showDateAddedArrow = true)} onclick={() => sortTable("date", false)}>date added 
+            <th onmouseover={() => (showDateAddedArrow = true)} onclick={() => sortTable("date", false)}>date added 
               {#if showDateAddedArrow}<span class="table-sort-arrow">▲</span>{/if}
             </th>
-            <th id="size" onmouseover={() => (showSizeArrow = true)} onclick={() => sortTable("size", false)}>size 
+            <th onmouseover={() => (showSizeArrow = true)} onclick={() => sortTable("size", false)}>size 
               {#if showSizeArrow}<span class="table-sort-arrow">▲</span>{/if}
             </th>
-            <th id="file-url" onmouseover={() => (showUrlArrow = true)} onclick={() => sortTable("text", false)} style="border-right: none;">url 
+            <th onmouseover={() => (showUrlArrow = true)} onclick={() => sortTable("text", false)} style="border-right: none;">url 
               {#if showUrlArrow}<span class="table-sort-arrow">▲</span>{/if}
             </th>
           </tr>
             {#each tableFileMap as curFile, i}
-                <tr class={i % 2 === 0? "table-element-odd" : "table-element-odd"}>
+                <tr class={i % 2 === 0? "table-element-odd" : "table-element-even"}>
                     <td class={i % 2 === 0? "table-element-odd" : "table-element-odd"}>
                         <span class="filename">{curFile.filename}</span>
                     </td>
-                    <td class={i % 2 === 0? "table-element-odd" : "table-element-odd"}>{curFile.dateAdded}</td>
-                    <td class={i % 2 === 0? "table-element-odd" : "table-element-odd"}>{curFile.fileSize}</td>
-                    <td style="border-right: none; display: flex; justify-content: space-between" class={i % 2 === 0? "table-element-odd" : "table-element-odd"}>
+                    <td>{curFile.dateAdded}</td>
+                    <td>{curFile.fileSize}</td>
+                    <td style="border-right: none; display: flex; justify-content: space-between">
                         <a href="https://{currentDomain}/{curFile.serverPath}">{curFile.serverPath}</a>
                         <div>
-                            <i class="fa fa-copy" onmousedown={() => (navigator.clipboard.writeText("https://{currentDomain}/{curFile.serverPath}"))} style="margin-right: 2px; cursor: pointer;"></i>
+                            <i class="fa fa-copy" onmousedown={() => copyToClipboard(curFile.serverPath)} style="margin-right: 2px; cursor: pointer;"></i>
                             <i class="fa fa-trash-o" onmousedown={() => (deleteCurrentFile(i))} style="margin-right: 2px; cursor: pointer;"></i>
                         </div>
                     </td>
@@ -280,9 +287,11 @@ function uploadFile(file: FormData) {
       </section>
     </div>
     <div id="alert-area">
+      {#if showClipboardPopup}
         <div class="copy-alert">
-            <h3>copied <a href={curCopiedLink}>{curCopiedLink}</a> to clipboard! &lt;w&gt;</h3>
+            <h3>copied <a href={curCopiedLink}>{curCopiedLink}</a> to clipboard! &gt;w&lt;</h3>
         </div>
+      {/if}
     </div>
 </div>
 
@@ -296,7 +305,6 @@ function uploadFile(file: FormData) {
 }
 
 #body {
-    background-color: var(--background);
     color: var(--text);
     font-family: "Zen Kaku Gothic New", sans-serif;
     font-size: 16px;
@@ -353,11 +361,6 @@ input[type=text], input[type=username], input[type=password] {
     backdrop-filter: blur(7.5px) brightness(0.5);
     justify-content: center;
     align-items: center; /* defaults to assuming it's flex~ */
-}
-
-.white-click-text {
-    color: white;
-    cursor: pointer;
 }
 
 #log-in-area {

@@ -1,0 +1,26 @@
+services:
+  svelte:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - API_URL=http://api:1402
+    depends_on:
+      - api
+    networks:
+      - filemanager-net
+
+  api:
+    build: ./backend
+    ports:
+      - "1402:1402"
+    environment:
+      - PORT=1402
+    volumes:
+      - /yuru # probably best to use this inside of a vm, or change this mount~
+    networks:
+      - filemanager-net
+
+networks:
+  filemanager-net:
+    driver: bridge

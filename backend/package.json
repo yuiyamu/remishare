@@ -1,15 +1,19 @@
 {
   "name": "remishare-server",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "main": "backend.js",
   "author": "yuiyamu",
-  "license": "GPL-3.0-only",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/multer": "^2.1.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "multer": "^2.1.1"
+    "multer": "^2.1.1",
+    "typescript": "^6.0.2"
   }
 }
