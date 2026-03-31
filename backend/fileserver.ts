@@ -1,5 +1,5 @@
-const fs = require("fs");
-const express = require('express');
+import * as fs from "node:fs";
+import * as express from "express";
 
 const app = express();
 const port = 1414; //not as bouba lovey >_< but we need a different port,,
@@ -11,7 +11,7 @@ app.listen(port, () => {
 app.get('/:fileid', (req, res) => {
   let fileId = req.params.fileid;
   let subdomain = req.hostname.split('.')[0];
-  let fileMap = JSON.parse(fs.readFileSync(`./files/${subdomain}/filemap.json`, {encoding: 'utf8'}));
+  let fileMap = JSON.parse(fs.readFileSync(`./files/${subdomain}/filemap.json`, {encoding: 'utf8'})) as fileEntry[];
   let originalFileIndex = fileMap.findIndex(file => file.serverPath === fileId);
 
   if (originalFileIndex === -1) {

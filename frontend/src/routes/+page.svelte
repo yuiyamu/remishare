@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount } from 'svelte';
-import remi from '$lib/assets/remi.jpg';
+import remi from '$lib/remi.jpg';
 
 var notLoggedIn = $state(true);
 onMount(() => {
@@ -13,20 +13,6 @@ var currentDomain = $state("");
 var fileMap: fileEntry[];
 var tableFileMap: fileEntry[];
 var curCopiedLink: string;
-
-interface fileEntry {
-    filename: string;
-    serverPath: string;
-    dateAdded: string;
-    fileSize: string;
-    rawFileSize: number;
-    timestampAdded: number;
-}
-
-interface loginAttempt {
-    loginStatus: boolean;
-    key?: string;
-}
 
 function sortTable(type: string) {
   if (true) {
@@ -185,7 +171,6 @@ async function fillTable(searchMap?: fileEntry[]) {
 
 <svelte:window
     ondragover={() => isShowingUpload = true}
-    ondragleave={() => isShowingUpload = false}
     ondrop={() => handleDroppedFile()}
 />
 
@@ -198,6 +183,7 @@ async function fillTable(searchMap?: fileEntry[]) {
         <img id="user-pfp">
       </div>
     </header>
+    {#if isShowingUpload}
     <div id="upload-area" class="screen-overlay" style={isShowingUpload? "flex" : "none"}>
       <div id="upload-content">
         <span>drag your file :3</span>
@@ -211,9 +197,10 @@ async function fillTable(searchMap?: fileEntry[]) {
             <div id="upload-progress-bar" style="width: {uploadPercent}%"></div><p id="progress-percent">{uploadPercent}%</p>
         {/if}
         <div class="upload-divider"></div>
-        <button id="cancel-upload">cancel</button>
+        <button id="cancel-upload" onclick={() => (isShowingUpload = false)}>cancel</button>
       </div>
     </div>
+    {/if}
     {#if notLoggedIn}
     <div id="not-logged-in" class="screen-overlay">
       <div id="log-in-area">
@@ -241,7 +228,7 @@ async function fillTable(searchMap?: fileEntry[]) {
           <h1>remishare 📦</h1>
           <p>drop your files anywhere on the page~</p>
           <p>you can also click the button below to do so :3</p>
-          <button id="upload-button">upload~ :3</button>
+          <button onclick={() => (isShowingUpload = true)}>upload~ :3</button>
         </div>
       </section>
       <section id="file-display">
@@ -257,7 +244,7 @@ async function fillTable(searchMap?: fileEntry[]) {
             <col>
           </colgroup>
             <tbody id="table-fill">
-                      <tr>
+            <tr>
             <th id="file-name" onmouseover={() => (showFileNameArrow = true)} onclick={() => sortTable("text")}>file name 
               {#if showFileNameArrow}<span class="table-sort-arrow">▲</span>{/if}
             </th>

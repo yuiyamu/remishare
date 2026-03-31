@@ -1,5 +1,5 @@
-server/userinfo.json
-server/files
+backend/userinfo.json
+backend/files
 
 .svelte-kit
 node_modules
