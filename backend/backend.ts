@@ -11,8 +11,8 @@ const port = 1402; /* <3 */
 
 const mainServer = http.createServer(app);
 const userServer = http.createServer(app);
-mainServer.listen(1402, () => console.log(`flanstore server - port 1402~`));
-userServer.listen(1414, () => console.log(`flanstore file server - port 1414~`));
+mainServer.listen(1402, () => console.log(`remishare server - port 1402~`));
+userServer.listen(1414, () => console.log(`remishare file server - port 1414~`));
 
 app.use(cors()); //make cors shut the FUCK up :3
 app.use(express.json()); //parsing messages in json because json is cool and sick
@@ -155,7 +155,7 @@ app.get('/readFilemap', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.redirect('https://flanstore.yuru.ca'); //redirects anyone who just goes to a base url :3 i think this is neat~
+    res.redirect('https://remi.yuru.ca'); //redirects anyone who just goes to a base url :3 i think this is neat~
 });
 
 app.post('/login', (req, res) => {

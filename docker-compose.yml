@@ -3,8 +3,6 @@ services:
     build: ./frontend
     ports:
       - "3000:3000"
-    environment:
-      - API_URL=http://api:1402
     depends_on:
       - api
     networks:
@@ -14,8 +12,7 @@ services:
     build: ./backend
     ports:
       - "1402:1402"
-    environment:
-      - PORT=1402
+      - "1414:1414"
     volumes:
       - /yuru/remishare-files:/app/files
     networks:
