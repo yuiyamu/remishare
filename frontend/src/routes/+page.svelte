@@ -1,6 +1,5 @@
 <script lang="ts">
 import { onMount } from 'svelte';
-import remi from '$lib/remi.jpg';
 
 //just copied straight from server >.< kinda janky but when you have seperated servers like this ig its easiest
 interface fileEntry {
@@ -18,18 +17,18 @@ interface loginAttempt {
 }
 
 const endpoint = "https://remiapi.yuru.ca";
-var currentDomain = $state("");
-var currentUser = $state("");
-var fileMap: fileEntry[]; //constant upon page load~
-var tableFileMap = $state() as fileEntry[];
-var curCopiedLink = $state("");
 
-var showFileNameArrow = $state(false);
-var showDateAddedArrow = $state(false);
-var showSizeArrow = $state(false);
-var showUrlArrow = $state(false);
+let currentDomain = $state("");
+let currentUser = $state("");
+let currentServer = $state("remilia");
+let currentServerLocation = $state("chicago")
 
-var notLoggedIn = $state(false);
+let fileMap: fileEntry[]; //constant upon page load~
+let tableFileMap = $state() as fileEntry[];
+let curCopiedLink = $state("");
+
+let notLoggedIn = $state(false);
+
 onMount(() => {
   notLoggedIn = !localStorage.getItem("key");
   if (!notLoggedIn) { //if we do have a key >:3
@@ -82,9 +81,9 @@ function sortTable(type: string, isDescending: boolean) {
   }
 }
 
-var attemptedLoginFailed = $state(false);
-var subdomainInput = $state("");
-var passwordInput = $state("");
+let attemptedLoginFailed = $state(false);
+let subdomainInput = $state("");
+let passwordInput = $state("");
 async function attemptLogin() {
   let passwordAttempt = await fetch(`${endpoint}/login`, {
     method: 'POST',
@@ -123,7 +122,7 @@ function logoutCurrentUser() {
   location.reload(); //get reloaded idiot
 }
 
-var searchQuery = $state("");
+let searchQuery = $state("");
 function searchKeyPress() {
   let searchFileMap = [] as fileEntry[];
   fileMap.forEach(file => { //uses the const map
@@ -133,7 +132,7 @@ function searchKeyPress() {
   });
 }
 
-var isShowingUpload = $state(false);
+let isShowingUpload = $state(false);
 function handleDroppedFile(event: DragEvent) {
   event.preventDefault();
   event.stopPropagation();
@@ -151,8 +150,8 @@ function fileSubmit(event: SubmitEvent) {
   uploadFile(file);
 }
 
-var uploadingFile = $state(false);
-var uploadPercent = $state(0);
+let uploadingFile = $state(false);
+let uploadPercent = $state(0);
 function uploadFile(file: FormData) {
   uploadingFile = true;
     
@@ -175,23 +174,64 @@ function uploadFile(file: FormData) {
   }
 }
 
-var showClipboardPopup = $state(false);
+let showClipboardPopup = $state(false);
 function copyToClipboard(filename: string) {
   showClipboardPopup = true;
   curCopiedLink = `https://${currentDomain}/${filename}`;
   navigator.clipboard.writeText(curCopiedLink);
 }
+
+//stupid functions to make svelte happy
+let showFileNameArrow = $state(false);
+let showDateAddedArrow = $state(false);
+let showSizeArrow = $state(false);
+function changeArrowDisplay(show: boolean, type: string) {
+  switch (type) {
+    case "filename":
+      showFileNameArrow = show? true : false;
+      break;
+    case "date":
+      showDateAddedArrow = show? true : false;
+      break;
+    case "size":
+      showSizeArrow = show? true : false;
+      break;
+  }
+}
+
+let fileNameAscending = $state(true);
+let dateAddedAscending = $state(true);
+let sizeAscending = $state(true);
+function changeArrowDirection(type: string) {
+  switch (type) {
+    case "filename":
+      fileNameAscending = !fileNameAscending;
+      sortTable("text", fileNameAscending);
+      break;
+    case "date":
+      dateAddedAscending = !dateAddedAscending;
+      sortTable("text", dateAddedAscending);
+      break;
+    case "size":
+      sizeAscending = !sizeAscending;
+      sortTable("text", sizeAscending);
+      break;
+  }
+}
 </script>
 
 <svelte:window ondragover={(e) => {e.preventDefault(); isShowingUpload = true}} ondrop={handleDroppedFile}/>
-<div id="background" style="background: url({remi})"></div>
-  <div id="body">
+<div id="background"></div>
+
+<div id="page"> <!-- wait, it's all flexboxes? always has been..... -->
+    {#if !notLoggedIn}
     <header id="header">
-      <p id="header-text">hello, <span id="page-url">{currentUser}</span>!</p>
-      <div id="logout-area">
-        <span id="logout" onmousedown={() => logoutCurrentUser()}>logout</span>
-      </div>
+      <span>uploading to: <span style="color: white;">{currentServer}</span> ({currentServerLocation})</span>
+      <span id="header-text">you're using <span style="color: white;">{currentUser}.yuru.ca</span>~</span>
+      <span id="logout" onmousedown={() => logoutCurrentUser()}>logout</span>
     </header>
+    {/if}
+
     {#if isShowingUpload}
     <div id="upload-area" class="screen-overlay" style={isShowingUpload? "flex" : "none"}>
       <div id="upload-content">
@@ -210,6 +250,7 @@ function copyToClipboard(filename: string) {
       </div>
     </div>
     {/if}
+
     {#if notLoggedIn}
     <div id="not-logged-in" class="screen-overlay">
       <div id="log-in-area">
@@ -229,7 +270,7 @@ function copyToClipboard(filename: string) {
         {/if}
       </div>
     </div>
-    {/if}
+    {:else}
     <div id="below-header">
       <section id="left-content">
         <div id="flanstore-info">
@@ -244,6 +285,7 @@ function copyToClipboard(filename: string) {
           <i class="fa fa-search" style="font-size: 22px; color: white; margin-left: 5px;"></i>
           <input class="search-input" id="search-input" type="text" bind:value={searchQuery} onchange={() => searchKeyPress()}/>
         </div>
+        <div id="table-container">
         <table class="file-table">
           <colgroup>
             <col style="width: 50%;">
@@ -253,18 +295,16 @@ function copyToClipboard(filename: string) {
           </colgroup>
             <tbody id="table-fill">
             <tr>
-            <th onmouseover={() => (showFileNameArrow = true)} onclick={() => sortTable("text", false)}>file name 
-              {#if showFileNameArrow}<span class="table-sort-arrow">▲</span>{/if}
+            <th onmouseover={() => changeArrowDisplay(true, "filename")} onfocus={() => changeArrowDisplay(true, "filename")} onmouseleave={() => changeArrowDisplay(false, "filename")} onblur={() => changeArrowDisplay(false, "filename")} onclick={() => changeArrowDirection("filename")}>file name 
+              {#if showFileNameArrow}<span class="table-sort-arrow">{fileNameAscending? '▲' : '▼'}</span>{/if}
             </th>
-            <th onmouseover={() => (showDateAddedArrow = true)} onclick={() => sortTable("date", false)}>date added 
-              {#if showDateAddedArrow}<span class="table-sort-arrow">▲</span>{/if}
+            <th onmouseover={() => changeArrowDisplay(true, "date")} onfocus={() => changeArrowDisplay(true, "date")} onmouseleave={() => changeArrowDisplay(false, "date")} onblur={() => changeArrowDisplay(false, "date")} onclick={() => changeArrowDirection("date")}>date added 
+              {#if showDateAddedArrow}<span class="table-sort-arrow">{dateAddedAscending? '▲' : '▼'}</span>{/if}
             </th>
-            <th onmouseover={() => (showSizeArrow = true)} onclick={() => sortTable("size", false)}>size 
-              {#if showSizeArrow}<span class="table-sort-arrow">▲</span>{/if}
+            <th onmouseover={() => changeArrowDisplay(true, "size")} onfocus={() => changeArrowDisplay(true, "size")} onmouseleave={() => changeArrowDisplay(false, "size")} onblur={() => changeArrowDisplay(false, "size")} onclick={() => changeArrowDirection("size")}>size 
+              {#if showSizeArrow}<span class="table-sort-arrow">{sizeAscending? '▲' : '▼'}</span>{/if}
             </th>
-            <th onmouseover={() => (showUrlArrow = true)} onclick={() => sortTable("text", false)} style="border-right: none;">url 
-              {#if showUrlArrow}<span class="table-sort-arrow">▲</span>{/if}
-            </th>
+            <th style="border-right: none;">url</th>
           </tr>
             {#each tableFileMap as curFile, i}
                 <tr class={i % 2 === 0? "table-element-odd" : "table-element-even"}>
@@ -276,35 +316,42 @@ function copyToClipboard(filename: string) {
                     <td style="border-right: none; display: flex; justify-content: space-between">
                         <a href="https://{currentDomain}/{curFile.serverPath}">{curFile.serverPath}</a>
                         <div>
-                            <i class="fa fa-copy" onmousedown={() => copyToClipboard(curFile.serverPath)} style="margin-right: 2px; cursor: pointer;"></i>
-                            <i class="fa fa-trash-o" onmousedown={() => (deleteCurrentFile(i))} style="margin-right: 2px; cursor: pointer;"></i>
+                            <img src="/copy-light.svg" alt="cp" onmousedown={() => copyToClipboard(curFile.serverPath)} width="16px" height="16px" style="margin-right: 2px; cursor: pointer; filter: invert(79%) sepia(8%) saturate(250%) hue-rotate(197deg) brightness(93%) contrast(88%);">
+                            <img src="/trash-light.svg" alt="rm" onmousedown={() => (deleteCurrentFile(i))}  width="16px" height="16px" style="margin-right: 2px; cursor: pointer; filter: invert(79%) sepia(8%) saturate(250%) hue-rotate(197deg) brightness(93%) contrast(88%);">
                         </div>
                     </td>
                 </tr>
             {/each}
             </tbody>
         </table>
+        </div>
       </section>
     </div>
-    <div id="alert-area">
-      {#if showClipboardPopup}
-        <div class="copy-alert">
-            <h3>copied <a href={curCopiedLink}>{curCopiedLink}</a> to clipboard! &gt;w&lt;</h3>
-        </div>
-      {/if}
+    {/if}
+</div>
+
+<div id="alert-area">
+  {#if showClipboardPopup}
+    <div class="copy-alert">
+      <h3>copied <a href={curCopiedLink}>{curCopiedLink}</a> to clipboard! &gt;w&lt;</h3>
     </div>
+  {/if}
 </div>
 
 <style>
+/* globals */
+@font-face { font-family: Zen Kaku Gothic New; src: url('/ZenKakuGothicNew.woff2') format('woff2')}
+
 :root {
-    --focus: rgb(193, 115, 66);
-    --unfocus: rgb(193, 174, 66);
-    --text: rgb(180 181 191);
-    --link: rgb(100, 101, 112);
-    --background: rgb(40 40 40);
+    --focus: #c17342;
+    --unfocus: #c1ae42;
+    --text: #b4b5bf;
+    --link: #646570;
+    --background: #282828;
 }
 
-#body {
+:global(body) {
+    background-color: #282828;
     color: var(--text);
     font-family: "Zen Kaku Gothic New", sans-serif;
     font-size: 16px;
@@ -313,7 +360,8 @@ function copyToClipboard(filename: string) {
 }
 
 a {
-    color: var(--link);
+    color: white;
+    text-decoration: none;
 }
 
 button {
@@ -325,11 +373,6 @@ button {
     text-decoration: none;
 }
 
-a {
-    color: white;
-    text-decoration: none;
-}
-
 input[type=text], input[type=username], input[type=password] {
     border-color: var(--unfocus);
     background-color: transparent;
@@ -338,6 +381,7 @@ input[type=text], input[type=username], input[type=password] {
     outline: none;
 }
 
+/* bg/global overlays */
 #background {
     height: 100vh;
     width: 100vw;
@@ -347,6 +391,7 @@ input[type=text], input[type=username], input[type=password] {
     z-index: -1;
     background-size: cover;
     background-position: center;
+    background: url('/remi.jpg');
     filter: blur(7.5px) brightness(0.15);
 }
 
@@ -363,37 +408,13 @@ input[type=text], input[type=username], input[type=password] {
     align-items: center; /* defaults to assuming it's flex~ */
 }
 
-#log-in-area {
-    display: grid;
-}
-
-#login-button {
-    margin-top: 20px;
-}
-
-#page-url {
-    color: white;
-}
-
-#logout-area {
+#page {
     display: flex;
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    align-items: center;
+    flex-direction: column;
+    height: 100vh;
 }
 
-#logout {
-    color: white;
-    margin-right: 10px;
-    cursor: pointer;
-}
-
-#below-header {
-    position: relative;
-    height: calc(100vh - 56px - 8px); /* for whatever reason, 8px + header seems to do the trick~ */
-}
-
+/* upload overlay */
 #upload-area {
     /* flex when opened with js */
     z-index: 1;
@@ -414,27 +435,58 @@ input[type=text], input[type=username], input[type=password] {
     margin-bottom: 20px;
 }
 
+/* login page */
+#log-in-area {
+    display: grid;
+}
+
+#login-button {
+    margin-top: 20px;
+}
+
+/* header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 52px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+#logout {
+    color: white;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+#below-header {
+    display: flex;
+    height: calc(100% - 52px);
+}
+
+#header-text {
+  padding-right: 140px; /* kinda wish i didnt need something like this bullshit but oh well */
+}
+
 #left-content {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 50%;
-    height: 100%;
 }
 
 #flanstore-info {
     margin-bottom: 56px;
 }
 
+/* file table.. gulp... */
 #file-display {
-    position: absolute;
-    overflow-y: scroll;
-    scrollbar-width: none;
-    top: 5px;
-    right: 0px;
+    position: relative;
     border: 2px solid var(--focus);
-    height: calc(100vh - 56px - 20px); /* gives it a bit of margin at the bottom, the 56px is the header */
+    height: calc(100% - 14px);
     width: 50%;
+    margin-right: 10px;
 }
 
 #search-bar {
@@ -455,10 +507,18 @@ input[type=text], input[type=username], input[type=password] {
     font-size: 22px;
 }
 
+#table-container {
+    position: absolute; /* i absolutely hate that this works. */
+    top: 50px;
+    left: 0;
+    height: calc(100% - 50px);
+    overflow-y: scroll;
+    scrollbar-width: none;
+}
+
 .file-table {
     table-layout: fixed; /* UNLUCKY but what i have to do for the sexy ellipses */
     border-collapse: collapse;
-    border-spacing: 0;
     width: 100%;
 } .file-table th {
     color: white;
@@ -491,7 +551,6 @@ input[type=text], input[type=username], input[type=password] {
 }
 
 .table-sort-arrow {
-    display: none;
     font-size: 12px;
     color:rgba(232, 198, 148, 0.25);
 }
@@ -540,7 +599,7 @@ input[type=text], input[type=username], input[type=password] {
 @media only screen and (max-device-width: 1000px)
 {
     #below-header {
-        height: auto;
+        flex-direction: column;
     }
 
     #flanstore-info {
@@ -552,17 +611,10 @@ input[type=text], input[type=username], input[type=password] {
         height: auto;
     }
 
-    #logout-area {
-        position: relative;
-        top: 0;
-        right: 0;
-        float: right;
-    }
-
     #file-display {
-        position: relative;
-        width: 100%;
-        height: 100%;
+        width: calc(100% - 24px);
+        margin-left: 10px;
+        margin-right: 10px;
     }
 
     #header-text {

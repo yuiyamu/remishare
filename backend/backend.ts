@@ -7,7 +7,6 @@ import multer from "multer";
 import cors from "cors";
 
 const app = express();
-const port = 1402; /* <3 */
 
 const mainServer = http.createServer(app);
 const userServer = http.createServer(app);
