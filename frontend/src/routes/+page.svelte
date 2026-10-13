@@ -473,6 +473,7 @@ input[type=text], input[type=username], input[type=password] {
     z-index: 1;
     justify-content: center;
     align-items: center; /* defaults to assuming it's flex~ */
+    backdrop-filter: blur(7.5px) brightness(0.7);
 }
 
 #page {
