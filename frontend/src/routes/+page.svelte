@@ -44,8 +44,12 @@ onMount(() => {
             'X-User': localStorage.getItem("user")!
             },
           });
+        //this puts it in the global fileMap, but for what we want to do, we need to put this in a temp filemap to work with as well
+        fileMap = await fileMapData.json() as fileEntry[];
+        tableFileMap = fileMap;
 
-        tableFileMap = await fileMapData.json() as fileEntry[]; //this puts it in the global fileMap, but for what we want to do, we need to put this in a temp filemap to work with as well
+        //when we load the page tho, we usually want to see what was most recently added :p
+        changeArrowDirection("date");
       } catch (err: any) {
         console.error(`something went wrong when fetching from our endpoint >.<: ${(err as Error).message}`);
       }
@@ -210,11 +214,11 @@ function changeArrowDirection(type: string) {
       break;
     case "date":
       dateAddedAscending = !dateAddedAscending;
-      sortTable("text", dateAddedAscending);
+      sortTable("date", dateAddedAscending);
       break;
     case "size":
       sizeAscending = !sizeAscending;
-      sortTable("text", sizeAscending);
+      sortTable("size", sizeAscending);
       break;
   }
 }
@@ -282,7 +286,7 @@ function changeArrowDirection(type: string) {
       </section>
       <section id="file-display">
         <div id="search-bar">
-          <i class="fa fa-search" style="font-size: 22px; color: white; margin-left: 5px;"></i>
+          <img src="/search.svg" alt="search..." width="22px" height="22px" style="filter: invert(1); margin-left: 8px;"/>
           <input class="search-input" id="search-input" type="text" bind:value={searchQuery} onchange={() => searchKeyPress()}/>
         </div>
         <div id="table-container">
@@ -316,8 +320,8 @@ function changeArrowDirection(type: string) {
                     <td style="border-right: none; display: flex; justify-content: space-between">
                         <a href="https://{currentDomain}/{curFile.serverPath}">{curFile.serverPath}</a>
                         <div>
-                            <img src="/copy-light.svg" alt="cp" onmousedown={() => copyToClipboard(curFile.serverPath)} width="16px" height="16px" style="margin-right: 2px; cursor: pointer; filter: invert(79%) sepia(8%) saturate(250%) hue-rotate(197deg) brightness(93%) contrast(88%);">
-                            <img src="/trash-light.svg" alt="rm" onmousedown={() => (deleteCurrentFile(i))}  width="16px" height="16px" style="margin-right: 2px; cursor: pointer; filter: invert(79%) sepia(8%) saturate(250%) hue-rotate(197deg) brightness(93%) contrast(88%);">
+                            <img src="/copy.svg" alt="cp" onmousedown={() => copyToClipboard(curFile.serverPath)} width="16px" height="16px" style="margin-right: 2px; cursor: pointer; filter: invert(79%) sepia(8%) saturate(250%) hue-rotate(197deg) brightness(93%) contrast(88%);">
+                            <img src="/trash.svg" alt="rm" onmousedown={() => (deleteCurrentFile(i))}  width="16px" height="16px" style="margin-right: 2px; cursor: pointer; filter: invert(79%) sepia(8%) saturate(250%) hue-rotate(197deg) brightness(93%) contrast(88%);">
                         </div>
                     </td>
                 </tr>
@@ -391,8 +395,7 @@ input[type=text], input[type=username], input[type=password] {
     z-index: -1;
     background-size: cover;
     background-position: center;
-    background: url('/remi.jpg');
-    filter: blur(7.5px) brightness(0.15);
+    background-image: url('/remi.webp');
 }
 
 .screen-overlay {
@@ -403,7 +406,6 @@ input[type=text], input[type=username], input[type=password] {
     top: 0;
     left: 0;
     z-index: 1;
-    backdrop-filter: blur(7.5px) brightness(0.5);
     justify-content: center;
     align-items: center; /* defaults to assuming it's flex~ */
 }

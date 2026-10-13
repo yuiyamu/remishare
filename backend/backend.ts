@@ -17,6 +17,7 @@ app.use(cors()); //make cors shut the FUCK up :3
 app.use(express.json()); //parsing messages in json because json is cool and sick
 app.use(express.urlencoded({ extended: true })); //lowkey don't know what this does but yeah sure whatever man
 
+if (!fs.existsSync(`./userinfo.json`)) fs.writeFileSync(`./userinfo.json`, "[]", 'utf8'); //doesn't already exist, get new
 var userInfo = JSON.parse(fs.readFileSync('./userinfo.json', {encoding: 'utf8'})) as user[];
 userInfo.forEach(user => {
     let userPathExists = fs.existsSync(`./files/${user.subdomain}/filemap.json`);
