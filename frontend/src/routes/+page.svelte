@@ -2,7 +2,7 @@
 import { onMount } from 'svelte';
 
 //just copied straight from server >.< kinda janky but when you have seperated servers like this ig its easiest
-interface fileEntry {
+type FileEntry = {
   filename: string;
   serverPath: string;
   dateAdded: string;
@@ -11,25 +11,81 @@ interface fileEntry {
   timestampAdded: number;
 }
 
-interface loginAttempt {
+type LoginAttempt = {
   loginStatus: boolean;
   key?: string;
 }
 
-const endpoint = "https://remiapi.yuru.ca";
+//when we load in, we want to calculate the fastest server to you (and then store >.<)
+const knownServers = [
+  { name: "remilia", url: "https://remiapi.yuru.ca", location: "chicago" },
+  { name: "botanicalgarden", url: "https://botanicalapi.yuru.ca", location: "haifa" },
+]
+
+type LeastPings = {
+  serverNum: number;
+  leastPing: number;
+}
+let currentServer = $state("");
+let currentServerLocation = $state("");
+let endpoint = $state("");
+async function measureClosestServer() {
+  const numPings = 5;
+  let leastPings: LeastPings[] = [];
+  for (let i = 0; i < knownServers.length; i++) {
+    let server = knownServers[i];
+
+    let pingTimes: number[] = [];
+    let pingFailed = false;
+    for (let j = 0; j < numPings; j++) {
+      const start = performance.now(); //gets current ms, before we start pinging~
+      try {
+        await fetch(`${server.url}`, { //we're not interested in the content at all, we just wanna get whatevers there lol
+          method: "HEAD",
+          redirect: "manual",
+          cache: "no-store",
+        });
+        pingTimes.push(performance.now() - start)
+      } catch {
+        console.log(`unable to ping server ${server.name}, maybe it's offline?`);
+        pingFailed = true;
+        break;
+      }
+    }
+
+    if (!pingFailed) {
+      leastPings.push({serverNum: i, leastPing: Math.min(...pingTimes)});
+    }
+  }
+
+  leastPings.sort((a, b) => a.leastPing - b.leastPing);
+  let winningServer = knownServers[leastPings[0].serverNum];
+  currentServer = winningServer.name;
+  currentServerLocation = winningServer.location;
+  endpoint = winningServer.url;
+}
 
 let currentDomain = $state("");
 let currentUser = $state("");
-let currentServer = $state("remilia");
-let currentServerLocation = $state("chicago")
 
-let fileMap: fileEntry[]; //constant upon page load~
-let tableFileMap = $state() as fileEntry[];
+let fileMap: FileEntry[]; //constant upon page load~
+let tableFileMap = $state() as FileEntry[];
 let curCopiedLink = $state("");
 
 let notLoggedIn = $state(false);
 
-onMount(() => {
+onMount(async () => {
+  if (!localStorage.getItem("server")) {
+    await measureClosestServer();
+    localStorage.setItem("server", currentServer);
+    localStorage.setItem("endpoint", endpoint);
+    localStorage.setItem("serverLocation", currentServerLocation);
+  } else { //if we already have it set, just set our vars~
+    currentServer = localStorage.getItem("server")!;
+    endpoint = localStorage.getItem("endpoint")!;
+    currentServerLocation = localStorage.getItem("serverLocation")!;
+  }
+
   notLoggedIn = !localStorage.getItem("key");
   if (!notLoggedIn) { //if we do have a key >:3
     currentDomain = `${localStorage.getItem("user")}.yuru.ca`;
@@ -45,7 +101,7 @@ onMount(() => {
             },
           });
         //this puts it in the global fileMap, but for what we want to do, we need to put this in a temp filemap to work with as well
-        fileMap = await fileMapData.json() as fileEntry[];
+        fileMap = await fileMapData.json() as FileEntry[];
         tableFileMap = fileMap;
 
         //when we load the page tho, we usually want to see what was most recently added :p
@@ -96,7 +152,7 @@ async function attemptLogin() {
     },
     body: JSON.stringify({ subdomain: subdomainInput, password: passwordInput }),
   });
-  let passwordData = await passwordAttempt.json() as loginAttempt;
+  let passwordData = await passwordAttempt.json() as LoginAttempt;
 
   if (passwordData.loginStatus) {
     localStorage.setItem("key", passwordData.key!); //i fucking love cross site scripting ^.^
@@ -108,6 +164,15 @@ async function attemptLogin() {
 }
 
 async function deleteCurrentFile(fileNum: number) {
+  //since we (kinda jankily) send back the file number we want to delete, we need to find the original number (unsorted~)
+  let realNum = -1;
+  for (let i = 0; i < fileMap.length; i++) {
+    if (fileMap[i].serverPath === tableFileMap[fileNum].serverPath) { //this is actually unique per file
+      realNum = i;
+      break;
+    }
+  }
+
   await fetch(`${endpoint}/deleteFile`, {
     method: 'POST',
     headers: {
@@ -115,7 +180,7 @@ async function deleteCurrentFile(fileNum: number) {
       'X-User': localStorage.getItem("user")!,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ fileToDelete: fileNum }),
+    body: JSON.stringify({ fileToDelete: realNum }),
   });
 
   location.reload(); //get reloaded idiot
@@ -128,7 +193,7 @@ function logoutCurrentUser() {
 
 let searchQuery = $state("");
 function searchKeyPress() {
-  let searchFileMap = [] as fileEntry[];
+  let searchFileMap = [] as FileEntry[];
   fileMap.forEach(file => { //uses the const map
     if (file.filename.toLowerCase().includes(searchQuery.toLowerCase())) {
       searchFileMap.push(file); //adds it to the temp filemap that we use for searches
